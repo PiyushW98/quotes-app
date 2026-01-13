@@ -1,52 +1,16 @@
-# version: '3.9'
-
-# services:
-#   db:
-#     build: ./db
-#     # image: mysql:5.7  # It's better to use a pre-built image for databases
-#     environment:
-#       MYSQL_ROOT_PASSWORD: root
-#       MYSQL_DATABASE: quotesdb
-#       MYSQL_USER: user
-#       MYSQL_PASSWORD: password
-#     # Removed volumes configuration as EB doesn't support named volumes
-
-#   api:
-#     build: ./api
-#     depends_on:
-#       - db
-#     environment:
-#       MYSQL_HOST: db
-#       MYSQL_USER: user
-#       MYSQL_PASSWORD: password
-#       MYSQL_DB: quotesdb
-#     # Removed ports configuration; EB handles port binding
-
-#   app:
-#     build: ./app
-#     depends_on:
-#       - api
-#     # Changed to map to port 80, which is what the EB load balancer will expect for HTTP traffic
-#     ports:
-#       - 80:5002  # Assuming your app.py is set to listen on port 5002
-
-# # Removed volumes section
-
-
-
-
-# ==== For Development works ======
 version: '3.9'
 
 services:
   db:
     container_name: quotes-db
-    build: ./db
+    build: ./database
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: quotesdb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - db-data:/var/lib/mysql
 
@@ -55,11 +19,13 @@ services:
     build: ./api
     depends_on:
       - db
+    env_file:
+      - .env
     environment:
-      MYSQL_HOST: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_DB: quotesdb
+      MYSQL_HOST: ${MYSQL_HOST}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DB: ${MYSQL_DATABASE}
     ports:
       - "5001:5001"
 
@@ -69,7 +35,6 @@ services:
     depends_on:
       - api
     ports:
-      # - "80:5000" # for beanstalk
       - "5002:5002"
 
 volumes:
